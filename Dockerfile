@@ -3,10 +3,12 @@
 FROM composer:lts AS deps
 WORKDIR /app
 
-RUN --mount=type=bind,source=composer.json,target=composer.json \
-    --mount=type=bind,source=composer.lock,target=composer.lock \
-    --mount=type=cache,target=/tmp/cache \
-    composer install --no-dev --no-interaction --prefer-dist --no-scripts
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts
+
+FROM deps AS test
+COPY . .
+RUN vendor/bin/phpunit
 
 FROM php:8.2-apache AS final
 
